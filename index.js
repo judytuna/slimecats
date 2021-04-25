@@ -27,7 +27,7 @@ client.on('message', async message => {
     if (message.member.voice.channel) {
       const connection = await message.member.voice.channel.join();
       // Create a dispatcher
-      const dispatcher = connection.play('sounds/meow.mp3');
+      const dispatcher = connection.play('media/meow.mp3');
 
       dispatcher.on('start', () => {
         console.log('meow.mp3 is now playing!');
