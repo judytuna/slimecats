@@ -10,7 +10,9 @@ client.once('ready', () => {
 
 client.on('message', message => {
   console.log(message.content);
-  message.channel.send('Slimecat meows back.');
+  if (message.content === 'meow') {
+    message.channel.send('Slimecat meows back.');
+  }
 });
 
 client.login(process.env.DISCORD_TOKEN);
