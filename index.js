@@ -3,7 +3,6 @@ dotenv.config();
 const fs = require('fs');
 const Discord = require('discord.js');
 const config = require('./config.json');
-
 const client = new Discord.Client();
 client.commands = new Discord.Collection();
 
@@ -49,8 +48,7 @@ client.on('message', async message => {
 
       // Always remember to handle errors appropriately!
       dispatcher.on('error', console.error);
-    }
-    else {
+    } else {
       message.channel.send('You\'re not in a voice channel I can join, though!');
     }
   }
