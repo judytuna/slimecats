@@ -19,7 +19,7 @@ You can also use import syntax:
   } from 'earthstar';
 */
 
-//================================================================================
+// ================================================================================
 /*
 Let's make a todo list app using Earthstar.
 
@@ -103,97 +103,31 @@ The user address can appear anywhere in the path, at any depth of the folder hie
 If a path has several addresses, any of those authors (and nobody else) can edit the document.
 */
 
-//================================================================================
-// SAVING AND LOADING TODO OBJECTS
+/*
+AUTHOR IDENTITY
 
-// The basic Todo type used by our app
-const makeNewTodo = (text, isDone) => {
-  return {
-      id: generateTodoId(),
-      text: text,
-      isDone: isDone,  // boolean
-  }
-}
+In Earthstar, users are called Authors.
+Each Author has a public and private key.
 
-const saveTodo = (storage, keypair, todo) => {
-  // Given a Todo object, write it to two Earthstar documents (text and isDone).
+In the code we call these their "address" and "secret".
+In user interfaces I like to call these "username" and "password"
+to help people understand how they work.
 
-  // "storage" is the Earthstar Storage instance.
-  // "keypair" is an AuthorKeypair object holding the users public and private keys.
+Generate a new identity like this.
+You can choose the first 4 letters of the address (called a "shortname").
+The rest will be different every time you run it:
 
-  // To save a document to Earthstar, we have to choose a document format.
-  // "es.4" is the latest format at the moment.
-  const write1 = storage.set(keypair, {
-      format: 'es.4',
-      path: todoTextPath(todo.id),
-      content: todo.text,
-  });
-  const write2 = storage.set(keypair, {
-      format: 'es.4',
-      path: todoIsDonePath(todo.id),
-      content: '' + todo.isDone,  // convert the boolean a string: "true" or "false"
-  });
+  let keypair = generateAuthorKeypair('suzy');
+  console.log(keypair);
 
-  // If the write fails for some reason it will return an Error (not throw -- return.)
-  // isErr is a helper function that checks if something is an instanceOf Error.
-
-  if (isErr(write1) || isErr(write2)) {
-      console.warn('write failed', write1, write2);
-  }
-}
-
-const listTodoIds = (storage) => {
-  // Return an array of all the todo ids found in the Earthstar Storage.
-
-  // Query for paths starting with "/slimecatsdo/".
-  // That'll return both kinds of docs, the text.txt and isDone.json docs.
-  // Let's filter them to only keep the text.txt docs.
-  // Note that storage queries always return results sorted alphabetically by path,
-  // so we don't have to sort it ourself.
-  const query = { pathStartsWith: '/slimecatsdo/' };
-  const labelPaths = storage.paths(query)
-      .filter(path => path.endsWith('text.txt'));
-
-  // Extract the todo id out of the path
-  const ids = labelPaths.map(path => path.split('/')[2]);
-  return ids;
+For this demo we'll use a hardcoded identity:
+*/
+const keypair = {
+  address: "@suzy.bo6u3bozzjg4njjolt7eevdyws7dknjiuzjsmyg3winte6fbaktca",
+  secret: "b2wmruovqhl4w6pbetozzvoh7zi4i66pdwwlsbfrmktk642w56ogq"
 };
 
-const lookupTodo = (storage, id) => {
-  // Given a todo id, look up both of its Earthstar documents
-  // and combine them into a Todo object that our app knows how to handle.
-  // Return undefined if not found.
-
-  // Earthstar documents can sync slowly, and in any order, so we have to
-  // be prepared for any of our documents to be missing -- we might not have
-  // both documents for a Todo.
-
-  // Look up documents by path and return their content,
-  // or undefined if they're missing
-  const textContent = storage.getContent(todoTextPath(id));
-  const isDoneContent = storage.getContent(todoIsDonePath(id));
-
-  // If the text document is missing, act like the entire todo doesn't exist.
-  if (textContent === undefined) { return undefined; }
-
-  // If the isDone document is missing, default it to false.
-  const isDone = false;
-  if (isDoneContent !== undefined) {
-      // This is a ".json" document but it should only
-      // ever hold "true" or "false", so we don't need
-      // to actually JSON.parse it.
-      isDone = (isDoneContent === 'true');
-  }
-
-  // Make a Todo style object for our app
-  return {
-      id: id,
-      text: textContent,
-      isDone: isDone,
-  }
-}
-
-//================================================================================
+// ================================================================================
 // MAIN
 
 /*
@@ -248,28 +182,99 @@ localstorage    -           yes
 indexeddb       -           coming soon
 */
 
-/*
-AUTHOR IDENTITY
 
-In Earthstar, users are called Authors.
-Each Author has a public and private key.
+// ================================================================================
+// SAVING AND LOADING TODO OBJECTS
 
-In the code we call these their "address" and "secret".
-In user interfaces I like to call these "username" and "password"
-to help people understand how they work.
+// The basic Todo type used by our app
+const makeNewTodo = (text, isDone = false) => {
+  const newId = generateTodoId();
+  console.log('generated todo id is:', newId);
+  console.log('text is:', text);
+  console.log('isDone is', isDone);
+  return {
+      id: newId,
+      text: text,
+      isDone: isDone,  // boolean
+  };
+};
 
-Generate a new identity like this.
-You can choose the first 4 letters of the address (called a "shortname").
-The rest will be different every time you run it:
+const saveTodo = (todo, doStorage = storage, doKeypair = keypair) => {
+  // Given a Todo object, write it to two Earthstar documents (text and isDone).
 
-  let keypair = generateAuthorKeypair('suzy');
-  console.log(keypair);
+  // "storage" is the Earthstar Storage instance.
+  // "keypair" is an AuthorKeypair object holding the users public and private keys.
 
-For this demo we'll use a hardcoded identity:
-*/
-const keypair = {
-  address: "@suzy.bo6u3bozzjg4njjolt7eevdyws7dknjiuzjsmyg3winte6fbaktca",
-  secret: "b2wmruovqhl4w6pbetozzvoh7zi4i66pdwwlsbfrmktk642w56ogq"
+  // To save a document to Earthstar, we have to choose a document format.
+  // "es.4" is the latest format at the moment.
+  const write1 = doStorage.set(doKeypair, {
+      format: 'es.4',
+      path: todoTextPath(todo.id),
+      content: todo.text,
+  });
+  const write2 = doStorage.set(doKeypair, {
+      format: 'es.4',
+      path: todoIsDonePath(todo.id),
+      content: '' + todo.isDone,  // convert the boolean a string: "true" or "false"
+  });
+
+  // If the write fails for some reason it will return an Error (not throw -- return.)
+  // isErr is a helper function that checks if something is an instanceOf Error.
+
+  if (isErr(write1) || isErr(write2)) {
+      console.warn('write failed', write1, write2);
+  }
+};
+
+const listTodoIds = (doStorage = storage) => {
+  // Return an array of all the todo ids found in the Earthstar Storage.
+
+  // Query for paths starting with "/slimecatsdo/".
+  // That'll return both kinds of docs, the text.txt and isDone.json docs.
+  // Let's filter them to only keep the text.txt docs.
+  // Note that storage queries always return results sorted alphabetically by path,
+  // so we don't have to sort it ourself.
+  const query = { pathStartsWith: '/slimecatsdo/' };
+  const labelPaths = doStorage.paths(query)
+      .filter(path => path.endsWith('text.txt'));
+
+  // Extract the todo id out of the path
+  const ids = labelPaths.map(path => path.split('/')[2]);
+  return ids;
+};
+
+const lookupTodo = (id, doStorage = storage) => {
+  // Given a todo id, look up both of its Earthstar documents
+  // and combine them into a Todo object that our app knows how to handle.
+  // Return undefined if not found.
+
+  // Earthstar documents can sync slowly, and in any order, so we have to
+  // be prepared for any of our documents to be missing -- we might not have
+  // both documents for a Todo.
+
+  // Look up documents by path and return their content,
+  // or undefined if they're missing
+  const textContent = doStorage.getContent(todoTextPath(id));
+  const isDoneContent = doStorage.getContent(todoIsDonePath(id));
+
+  // If the text document is missing, act like the entire todo doesn't exist.
+  if (textContent === undefined) { return undefined; }
+
+  // If the isDone document is missing, default it to false.
+  let isDone = false;
+  if (isDoneContent !== undefined) {
+      // This is a ".json" document but it should only
+      // ever hold "true" or "false", so we don't need
+      // to actually JSON.parse it.
+      isDone = (isDoneContent === 'true');
+  }
+
+  // Make a Todo style object for our app
+  return {
+      id: id,
+      text: textContent,
+      isDone: isDone,
+  };
 };
 
 
@@ -282,6 +287,7 @@ You would probably want to build some command line flags to make this a useful
 todo app -- maybe some flags to create, list, or complete todos.
 */
 
+/*
 console.log('workspace:', workspace);
 console.log('author:', keypair.address);
 console.log();
@@ -319,8 +325,9 @@ for (let doc of storage.documents()) {
 console.log();
 console.log('One document in full detail:');
 console.log(storage.documents()[0]);
+*/
 
-//================================================================================
+// ================================================================================
 // SYNC
 
 /*
@@ -358,7 +365,7 @@ const syncer = new OnePubOneWorkspaceSyncer(storage, pub);
 // forever, streaming new changes as they happen.
 // In this demo we'll just sync once.
 let stillSyncing = false;
-const syncOnce = async (pubToUse) => {
+const syncOnce = async (pubToUse = pub) => {
   stillSyncing = true;
   try {
       console.log(`syncing once to ${pubToUse}...`);
@@ -375,8 +382,8 @@ const syncOnce = async (pubToUse) => {
   }
 };
 // uncomment these two lines to actually do the sync:
-// stillSyncing = true;
-// syncOnce(pub);
+stillSyncing = true;
+syncOnce(pub);
 
 /*
 If you're not familiar with await/async, just know
@@ -409,7 +416,7 @@ todos change in the storage (because of incoming data from a sync).
   unsub();
 */
 
-//================================================================================
+// ================================================================================
 // CLOSING
 
 /*
@@ -437,4 +444,15 @@ const closeStorage = async () => {
     // or we never tried to sync in the first place, let's just close it and be done
     storage.close();
   }
+};
+
+// closeStorage();
+
+module.exports = {
+  makeNewTodo: makeNewTodo,
+  saveTodo: saveTodo,
+  listTodoIds: listTodoIds,
+  lookupTodo: lookupTodo,
+  syncOnce: syncOnce,
+  closeStorage: closeStorage,
 };
