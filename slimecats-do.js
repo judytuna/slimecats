@@ -243,6 +243,22 @@ const listTodoIds = (doStorage = storage) => {
   return ids;
 };
 
+const listUndoneIds = (doStorage = storage) => {
+  const query = { pathStartsWith: '/slimecatsdo/' };
+  const labelPaths = doStorage.paths(query)
+      .filter(path => path.endsWith('text.txt'));
+
+  let ids = [];
+  labelPaths.forEach(path => {
+    const id = path.split('/')[2];
+    const foundTodo = lookupTodo(id);
+    if (!foundTodo.isDone) {
+      ids.push(foundTodo.id);
+    }
+  });
+  return ids;
+};
+
 const lookupTodo = (id, doStorage = storage) => {
   // Given a todo id, look up both of its Earthstar documents
   // and combine them into a Todo object that our app knows how to handle.
@@ -452,6 +468,7 @@ module.exports = {
   makeNewTodo: makeNewTodo,
   saveTodo: saveTodo,
   listTodoIds: listTodoIds,
+  listUndoneIds: listUndoneIds,
   lookupTodo: lookupTodo,
   syncOnce: syncOnce,
   closeStorage: closeStorage,
