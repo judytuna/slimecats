@@ -75,11 +75,11 @@ We also need to decide what paths to save our documents at,
 and what the content will be.
 */
 
-let todoTextPath = (id) =>
-  `/slimecats-do/${id}/text.txt`;     // will hold the text of the todo
+const todoTextPath = (id) =>
+  `/slimecatsdo/${id}/text.txt`;     // will hold the text of the todo
 
-let todoIsDonePath = (id) =>
-  `/slimecats-do/${id}/isDone.json`;  // will hold true or false (as a string)
+const todoIsDonePath = (id) =>
+  `/slimecatsdo/${id}/isDone.json`;  // will hold true or false (as a string)
 
 /*
 Why we chose those paths:
@@ -96,8 +96,8 @@ By default, Earthstar documents can be edited and deleted by any user.
 You can limit the edit permissions by including ("~" + author.address) in a path.
 We don't use that feature in this tutorial, but it would look like this:
 
-  `/slimecats-do/~${author.address}/${id}/todo.txt`
-  /slimecats-do/~@suzy.bo6u3bozzjg4njjolt7eevdyws7dknjiuzjsmyg3winte6fbaktca/1606164670376000:78987897/todo.txt
+  `/slimecatsdo/~${author.address}/${id}/todo.txt`
+  /slimecatsdo/~@suzy.bo6u3bozzjg4njjolt7eevdyws7dknjiuzjsmyg3winte6fbaktca/1606164670376000:78987897/todo.txt
 
 The user address can appear anywhere in the path, at any depth of the folder hierarchy.
 If a path has several addresses, any of those authors (and nobody else) can edit the document.
@@ -107,7 +107,7 @@ If a path has several addresses, any of those authors (and nobody else) can edit
 // SAVING AND LOADING TODO OBJECTS
 
 // The basic Todo type used by our app
-let makeNewTodo = (text, isDone) => {
+const makeNewTodo = (text, isDone) => {
   return {
       id: generateTodoId(),
       text: text,
@@ -115,7 +115,7 @@ let makeNewTodo = (text, isDone) => {
   }
 }
 
-let saveTodo = (storage, keypair, todo) => {
+const saveTodo = (storage, keypair, todo) => {
   // Given a Todo object, write it to two Earthstar documents (text and isDone).
 
   // "storage" is the Earthstar Storage instance.
@@ -123,12 +123,12 @@ let saveTodo = (storage, keypair, todo) => {
 
   // To save a document to Earthstar, we have to choose a document format.
   // "es.4" is the latest format at the moment.
-  let write1 = storage.set(keypair, {
+  const write1 = storage.set(keypair, {
       format: 'es.4',
       path: todoTextPath(todo.id),
       content: todo.text,
   });
-  let write2 = storage.set(keypair, {
+  const write2 = storage.set(keypair, {
       format: 'es.4',
       path: todoIsDonePath(todo.id),
       content: '' + todo.isDone,  // convert the boolean a string: "true" or "false"
@@ -142,24 +142,24 @@ let saveTodo = (storage, keypair, todo) => {
   }
 }
 
-let listTodoIds = (storage) => {
+const listTodoIds = (storage) => {
   // Return an array of all the todo ids found in the Earthstar Storage.
 
-  // Query for paths starting with "/slimecats-do/".
+  // Query for paths starting with "/slimecatsdo/".
   // That'll return both kinds of docs, the text.txt and isDone.json docs.
   // Let's filter them to only keep the text.txt docs.
   // Note that storage queries always return results sorted alphabetically by path,
   // so we don't have to sort it ourself.
-  let query = { pathStartsWith: '/slimecats-do/' };
-  let labelPaths = storage.paths(query)
+  const query = { pathStartsWith: '/slimecatsdo/' };
+  const labelPaths = storage.paths(query)
       .filter(path => path.endsWith('text.txt'));
 
   // Extract the todo id out of the path
-  let ids = labelPaths.map(path => path.split('/')[2]);
+  const ids = labelPaths.map(path => path.split('/')[2]);
   return ids;
 };
 
-let lookupTodo = (storage, id) => {
+const lookupTodo = (storage, id) => {
   // Given a todo id, look up both of its Earthstar documents
   // and combine them into a Todo object that our app knows how to handle.
   // Return undefined if not found.
@@ -170,14 +170,14 @@ let lookupTodo = (storage, id) => {
 
   // Look up documents by path and return their content,
   // or undefined if they're missing
-  let textContent = storage.getContent(todoTextPath(id));
-  let isDoneContent = storage.getContent(todoIsDonePath(id));
+  const textContent = storage.getContent(todoTextPath(id));
+  const isDoneContent = storage.getContent(todoIsDonePath(id));
 
   // If the text document is missing, act like the entire todo doesn't exist.
   if (textContent === undefined) { return undefined; }
 
   // If the isDone document is missing, default it to false.
-  let isDone = false;
+  const isDone = false;
   if (isDoneContent !== undefined) {
       // This is a ".json" document but it should only
       // ever hold "true" or "false", so we don't need
@@ -207,7 +207,7 @@ Just make up a workspace name to start using it.
 Workspaces should have some randomness on the end to make them hard to guess,
 because if you know the workspace you can get its data.
 */
-let workspace = "+slimecats-do.iu8nhj2anvr74slnjei";
+const workspace = '+slimecatsdo.iu8nhj2anvr74slnjei';
 
 /*
 STORAGE
@@ -218,7 +218,7 @@ There are several storage backends to choose from.
 You can use the in-memory storage which will be lost when the program ends...
 */
 console.log('using memory storage');
-let storage = new StorageMemory([ValidatorEs4], workspace);
+const storage = new StorageMemory([ValidatorEs4], workspace);
 
 /*
 Or keep your data in an SQLite file.  SQLite only works in Node, not browsers.
@@ -227,7 +227,7 @@ There's also a command-line tool called "earthstar-cli" which can manage
 sqlite files like this one and sync them for you.
 https://www.npmjs.com/package/earthstar-cli
 
-  let sqliteFilename = 'slimecats-do.sqlite';
+  let sqliteFilename = 'slimecatsdo.sqlite';
   console.log('using sqlite storage: ' + sqliteFilename);
   let storage = new StorageSqlite({
       mode: 'create-or-open',
@@ -267,7 +267,7 @@ The rest will be different every time you run it:
 
 For this demo we'll use a hardcoded identity:
 */
-let keypair = {
+const keypair = {
   address: "@suzy.bo6u3bozzjg4njjolt7eevdyws7dknjiuzjsmyg3winte6fbaktca",
   secret: "b2wmruovqhl4w6pbetozzvoh7zi4i66pdwwlsbfrmktk642w56ogq"
 };
@@ -358,25 +358,25 @@ const syncer = new OnePubOneWorkspaceSyncer(storage, pub);
 // forever, streaming new changes as they happen.
 // In this demo we'll just sync once.
 let stillSyncing = false;
-const syncOnce = async (pub) => {
+const syncOnce = async (pubToUse) => {
   stillSyncing = true;
   try {
-      console.log(`syncing once to ${pub}...`);
+      console.log(`syncing once to ${pubToUse}...`);
       console.log('this might print a bunch of debug information...');
 
-      let stats = await syncer.syncOnce();
+      const stats = await syncer.syncOnce();
       stillSyncing = false;
 
       console.log('done syncing');
-      console.log(`visit ${pub}/workspace/${workspace} to see your docs on the pub.`);
+      console.log(`visit ${pubToUse}/workspace/${workspace} to see your docs on the pub.`);
       console.log(stats);  // show the number of docs that were synced
   } catch (err) {
       console.error(err);
   }
 };
 // uncomment these two lines to actually do the sync:
-stillSyncing = true;
-syncOnce();
+// stillSyncing = true;
+// syncOnce(pub);
 
 /*
 If you're not familiar with await/async, just know
@@ -430,9 +430,11 @@ const waitUntilSyncingIsDone = async () => {
       }
   }
 };
-if (stillSyncing) {
-  waitUntilSyncingIsDone();
-} else {
-  // or we never tried to sync in the first place, let's just close it and be done
-  storage.close();
-}
+const closeStorage = async () => {
+  if (stillSyncing) {
+    waitUntilSyncingIsDone();
+  } else {
+    // or we never tried to sync in the first place, let's just close it and be done
+    storage.close();
+  }
+};
