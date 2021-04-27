@@ -8,6 +8,6 @@ module.exports = {
   args: false,
   execute(message) {
     slimecatsDo.syncOnce();
-    message.channel.send('Synced!');
+    message.channel.send('Syncing!');
   },
 };

@@ -391,35 +391,43 @@ You can run a pub on your own computer:
 You can also clone the demo pub on glitch.com (glitch calls this "remixing")
 */
 
-const pub = 'https://earthstar-demo-pub-v5-a.glitch.me';
+const pub1 = 'https://earthstar-demo-pub-v5-a.glitch.me';
+const pub2 = 'https://earthstar-demo-pub-6b.fly.dev/';
+const pub3 = 'https://earthstar-demo-pub-v6-a.glitch.me/';
 
 // Make a Syncer instance.
 // It's responsible for syncing one pub with one local workspace.
-const syncer = new OnePubOneWorkspaceSyncer(storage, pub);
+const syncer1 = new OnePubOneWorkspaceSyncer(storage, pub1);
+const syncer2 = new OnePubOneWorkspaceSyncer(storage, pub2);
+const syncer3 = new OnePubOneWorkspaceSyncer(storage, pub3);
+
 
 // You can "sync once" and then stop, or do a live sync that continues
 // forever, streaming new changes as they happen.
 // In this demo we'll just sync once.
-let stillSyncing = false;
-const syncOnce = async (pubToUse = pub) => {
-  stillSyncing = true;
+const syncOnceWithOnePub = async (syncerToUse) => {
   try {
-      console.log(`syncing once to ${pubToUse}...`);
+      console.log(`syncing once to ${syncerToUse.domain}...`);
       console.log('this might print a bunch of debug information...');
 
-      const stats = await syncer.syncOnce();
-      stillSyncing = false;
+      const stats = await syncerToUse.syncOnce();
 
       console.log('done syncing');
-      console.log(`visit ${pubToUse}/workspace/${workspace} to see your docs on the pub.`);
+      console.log(`visit ${syncerToUse.domain}/workspace/${workspace} to see your docs on the pub.`);
       console.log(stats);  // show the number of docs that were synced
   } catch (err) {
       console.error(err);
   }
 };
+
+const syncOnce = () => {
+  syncOnceWithOnePub(syncer1);
+  syncOnceWithOnePub(syncer2);
+  syncOnceWithOnePub(syncer3);
+};
+
 // uncomment these two lines to actually do the sync:
-stillSyncing = true;
-syncOnce(pub);
+syncOnce();
 
 /*
 If you're not familiar with await/async, just know
@@ -429,7 +437,7 @@ that syncer.syncOnce() returns a Promise.  You could do this instead:
       .then((stats) => console.log('done syncing', stats));
 */
 
-//================================================================================
+// ================================================================================
 // Extra credit: subscribing to changes
 
 /*
@@ -460,26 +468,8 @@ When you're done with a Storage instance you must close it or your
 program will hang forever.
 This turns off subscriptions, closes files on disk, stops ongoing syncs, etc.
 */
-
-// here's a function to wait until the syncing is done, then close it
-const waitUntilSyncingIsDone = async () => {
-  while (true) {
-      console.log('                ...waiting for sync to finish');
-      await sleep(240);
-      if (stillSyncing === false) {
-          console.log('                ...syncing is done; closing the storage and ending the program');
-          storage.close();
-          return;
-      }
-  }
-};
 const closeStorage = async () => {
-  if (stillSyncing) {
-    waitUntilSyncingIsDone();
-  } else {
-    // or we never tried to sync in the first place, let's just close it and be done
-    storage.close();
-  }
+  storage.close();
 };
 
 // closeStorage();

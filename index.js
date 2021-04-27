@@ -61,7 +61,7 @@ client.on('message', async message => {
 
 setInterval(() => {
   slimecatsDo.syncOnce();
-  console.log('Synced!'); // later: detect if something has changed and send a lil message
+  console.log('Starting sync...'); // later: detect if something has changed and send a lil message
 }, 60 * 1000);
 
 client.login(process.env.DISCORD_TOKEN);
