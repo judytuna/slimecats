@@ -392,8 +392,8 @@ You can also clone the demo pub on glitch.com (glitch calls this "remixing")
 */
 
 const pub1 = 'https://earthstar-demo-pub-v5-a.glitch.me';
-const pub2 = 'https://earthstar-demo-pub-6b.fly.dev/';
-const pub3 = 'https://earthstar-demo-pub-v6-a.glitch.me/';
+const pub2 = 'https://earthstar-demo-pub-6b.fly.dev';
+const pub3 = 'https://earthstar-demo-pub-v6-a.glitch.me';
 
 // Make a Syncer instance.
 // It's responsible for syncing one pub with one local workspace.
