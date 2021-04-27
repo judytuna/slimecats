@@ -3,6 +3,7 @@ dotenv.config();
 const fs = require('fs');
 const Discord = require('discord.js');
 const config = require('./config.json');
+const slimecatsDo = require('./slimecats-do');
 const client = new Discord.Client();
 client.commands = new Discord.Collection();
 
@@ -57,5 +58,10 @@ client.on('message', async message => {
   }
 
 });
+
+setInterval(() => {
+  slimecatsDo.syncOnce();
+  console.log('Synced!'); // later: detect if something has changed and send a lil message
+}, 60 * 1000);
 
 client.login(process.env.DISCORD_TOKEN);
