@@ -55,7 +55,7 @@ const generateTodoId = () =>
   // make an id like "1606164670376000:78987897"
   // Earthstar uses MICROseconds everywhere, not milliseconds,
   // so we multiply by 1000.
-  `${Date.now() * 1000}:${randInt(10000000, 99999999)}`;
+  `${Date.now() * 1000}-${randInt(1000000, 9999999)}`;
 
 /*
 PATHS
@@ -76,10 +76,10 @@ and what the content will be.
 */
 
 const todoTextPath = (id) =>
-  `/slimecatsdo/${id}/text.txt`;     // will hold the text of the todo
+  `/todo/${id}/text.txt`;     // will hold the text of the todo
 
 const todoIsDonePath = (id) =>
-  `/slimecatsdo/${id}/isDone.json`;  // will hold true or false (as a string)
+  `/todo/${id}/isDone.json`;  // will hold true or false (as a string)
 
 /*
 Why we chose those paths:
@@ -233,12 +233,12 @@ const saveTodo = (todo, doStorage = storage, doKeypair = keypair) => {
 const listTodoIds = (doStorage = storage) => {
   // Return an array of all the todo ids found in the Earthstar Storage.
 
-  // Query for paths starting with "/slimecatsdo/".
+  // Query for paths starting with "/todo/".
   // That'll return both kinds of docs, the text.txt and isDone.json docs.
   // Let's filter them to only keep the text.txt docs.
   // Note that storage queries always return results sorted alphabetically by path,
   // so we don't have to sort it ourself.
-  const query = { pathStartsWith: '/slimecatsdo/' };
+  const query = { pathStartsWith: '/todo/' };
   const labelPaths = doStorage.paths(query)
       .filter(path => path.endsWith('text.txt'));
 
@@ -248,7 +248,7 @@ const listTodoIds = (doStorage = storage) => {
 };
 
 const listUndoneIds = (doStorage = storage) => {
-  const query = { pathStartsWith: '/slimecatsdo/' };
+  const query = { pathStartsWith: '/todo/' };
   const labelPaths = doStorage.paths(query)
       .filter(path => path.endsWith('text.txt'));
 
@@ -264,7 +264,7 @@ const listUndoneIds = (doStorage = storage) => {
 };
 
 const listDoneIds = (doStorage = storage) => {
-  const query = { pathStartsWith: '/slimecatsdo/' };
+  const query = { pathStartsWith: '/todo/' };
   const labelPaths = doStorage.paths(query)
       .filter(path => path.endsWith('text.txt'));
 
