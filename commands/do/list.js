@@ -8,7 +8,7 @@ module.exports = {
   description: 'Lists all todos for your slimecat.',
   args: false,
   execute(message, args) {
-    const displayIds = args[0]==='all' ? slimecatsDo.listTodoIds() : slimecatsDo.listUndoneIds();
+    const displayIds = args[0] === 'all' ? slimecatsDo.listTodoIds() : slimecatsDo.listUndoneIds();
     const responseMsg = new Discord.MessageEmbed().setTitle('Your slimecat has lots to do.');
     let num = 1;
     let msgBody = '';

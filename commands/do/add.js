@@ -14,7 +14,6 @@ module.exports = {
       slimecatsDo.syncOnce();
       const foundTodo = slimecatsDo.lookupTodo(newTodo.id);
       message.channel.send(`id: ${foundTodo.id}\ntext: ${foundTodo.text}\nisDone: ${foundTodo.isDone}`);
-      slimecatsDo.closeStorage();
     } else {
       message.channel.send('Unable to add that todo.');
     }

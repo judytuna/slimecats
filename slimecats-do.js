@@ -103,6 +103,10 @@ The user address can appear anywhere in the path, at any depth of the folder hie
 If a path has several addresses, any of those authors (and nobody else) can edit the document.
 */
 
+// stores contents of your slimecat's boxes
+const boxesPath = () =>
+  '/slimecatsdo/boxes.json';
+
 /*
 AUTHOR IDENTITY
 
@@ -253,6 +257,22 @@ const listUndoneIds = (doStorage = storage) => {
     const id = path.split('/')[2];
     const foundTodo = lookupTodo(id);
     if (!foundTodo.isDone) {
+      ids.push(foundTodo.id);
+    }
+  });
+  return ids;
+};
+
+const listDoneIds = (doStorage = storage) => {
+  const query = { pathStartsWith: '/slimecatsdo/' };
+  const labelPaths = doStorage.paths(query)
+      .filter(path => path.endsWith('text.txt'));
+
+  let ids = [];
+  labelPaths.forEach(path => {
+    const id = path.split('/')[2];
+    const foundTodo = lookupTodo(id);
+    if (foundTodo.isDone) {
       ids.push(foundTodo.id);
     }
   });
@@ -464,12 +484,40 @@ const closeStorage = async () => {
 
 // closeStorage();
 
+// track what i've put in my cardboard boxes
+// there is zero error checking
+const boxes = (doStorage = storage) => {
+  const boxesContent = doStorage.getContent(boxesPath());
+  return boxesContent ? JSON.parse(boxesContent) : {};
+};
+
+const addThingToBoxes = (thing = 'treat', doStorage = storage, doKeyPair = keypair) => {
+  const currentBoxes = boxes();
+  if (currentBoxes && currentBoxes[thing]) {
+    currentBoxes[thing] = currentBoxes[thing] + 1;
+  } else {
+    currentBoxes[thing] = 1;
+  }
+  const write = doStorage.set(doKeyPair, {
+    format: 'es.4',
+    path: boxesPath(),
+    content: JSON.stringify(currentBoxes),
+  });
+
+  if (isErr(write)) {
+    console.warn('write failed', write);
+  }
+};
+
 module.exports = {
   makeNewTodo: makeNewTodo,
   saveTodo: saveTodo,
   listTodoIds: listTodoIds,
   listUndoneIds: listUndoneIds,
+  listDoneIds: listDoneIds,
   lookupTodo: lookupTodo,
   syncOnce: syncOnce,
   closeStorage: closeStorage,
+  boxes: boxes,
+  addThingToBoxes: addThingToBoxes,
 };
